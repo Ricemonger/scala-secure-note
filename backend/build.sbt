@@ -7,6 +7,7 @@ lazy val http4sVersion     = "0.23.32"
 lazy val circeVersion      = "0.14.14"
 lazy val doobieVersion     = "1.0.0-RC8"
 lazy val jwtScalaVersion   = "11.0.3"
+lazy val pureConfigVersion = "0.17.10"
 lazy val munitVersion      = "1.2.4"
 
 lazy val root = (project in file("."))
@@ -30,6 +31,8 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-core"     % doobieVersion,
       "org.tpolecat" %% "doobie-postgres" % doobieVersion,
       "org.tpolecat" %% "doobie-hikari"   % doobieVersion,
+
+      "com.github.pureconfig" %% "pureconfig-generic-scala3" % pureConfigVersion,
 
       "org.scalameta" %% "munit"             % munitVersion % Test,
       "org.typelevel" %% "munit-cats-effect" % "2.0.0"      % Test
