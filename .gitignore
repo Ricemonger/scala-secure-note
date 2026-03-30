@@ -1,10 +1,5 @@
-#security_keycloak.env
-#security_tickets.env
-#security_tickets_comments.env
-#security_tickets_logging.env
-#security_users_preferences.env
-#realm-it-support.json
-#application-auth-values.yaml
+#security_jwt.env
+#security_postgres.env
 
 target/
 project/target/
