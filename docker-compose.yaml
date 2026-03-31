@@ -35,8 +35,8 @@ services:
       - security_postgres.env
       - security_jwt.env
     environment:
-      POSTGRES_HOST: {POSTGRES_HOST}
-      POSTGRES_PORT: {POSTGRES_PORT}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
       SERVER_PORT: ${BACKEND_PORT}
     networks:
       - frontend_net
@@ -53,8 +53,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
-    env_file:
-      - security_jwt.env
     environment:
       REACT_APP_BACKEND_HOST: ${BACKEND_HOST}
       REACT_APP_BACKEND_PORT: ${BACKEND_PORT}

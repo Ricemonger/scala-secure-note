@@ -14,17 +14,23 @@ import org.http4s.server.Router
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import pureconfig.ConfigSource
+import org.flywaydb.core.Flyway
 
+import java.util.TimeZone
 import scala.concurrent.ExecutionContext
 
 object Application extends IOApp.Simple {
 
   given Logger[IO] = Slf4jLogger.getLogger[IO]
 
+  TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+  
   override def run: IO[Unit] = for {
     emberConfig <- ConfigSource.default.at("ember").loadF[IO, EmberConfig]
     jwtConfig <- ConfigSource.default.at("jwt").loadF[IO, JwtConfig]
     dbConfig <- ConfigSource.default.at("database").loadF[IO, DatabaseConfig]
+
+    _ <- runMigrations(dbConfig)
 
     _ <- (for {
       xa <- HikariTransactor.newHikariTransactor[IO](
@@ -60,4 +66,12 @@ object Application extends IOApp.Simple {
       IO.println(s"Server ready on ${emberConfig.host}:${emberConfig.port}!") *> IO.never
     }
   } yield ()
+
+  private def runMigrations(config: DatabaseConfig): IO[Unit] = IO.blocking {
+    Flyway
+      .configure()
+      .dataSource(config.url, config.user, config.password)
+      .load()
+      .migrate()
+  }
 }

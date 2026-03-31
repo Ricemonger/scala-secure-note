@@ -23,16 +23,6 @@ object AuthService {
 
   class LiveAuthService[F[_] : Sync](repo: UserRepository[F], config: JwtConfig) extends AuthService[F] {
 
-    private def generateJwt(id: UUID): F[String] = Sync[F].delay {
-      val claim = JwtClaim(
-        content = s"""{"id": "$id"}""",
-        expiration = Some(Instant.now().plusSeconds(config.expiration).getEpochSecond),
-        issuedAt = Some(Instant.now().getEpochSecond)
-      )
-
-      JwtCirce.encode(claim, config.secret, JwtAlgorithm.HS256)
-    }
-
     def register(username: String, passwordAttempt: String): F[String] = {
       for {
         passwordHash <- BCrypt.hashpw[F](passwordAttempt)
@@ -59,6 +49,16 @@ object AuthService {
         jwt <- if (isValid == Verified) generateJwt(user.id)
         else InvalidUserCredentialsException().raiseError[F, String]
       } yield jwt
+    }
+
+    private def generateJwt(id: UUID): F[String] = Sync[F].delay {
+      val claim = JwtClaim(
+        content = s"""{"id": "$id"}""",
+        expiration = Some(Instant.now().plusSeconds(config.expiration).getEpochSecond),
+        issuedAt = Some(Instant.now().getEpochSecond)
+      )
+
+      JwtCirce.encode(claim, config.secret, JwtAlgorithm.HS256)
     }
   }
 }

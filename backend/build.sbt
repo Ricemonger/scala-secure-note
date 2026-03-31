@@ -10,6 +10,8 @@ lazy val jwtScalaVersion   = "11.0.3"
 lazy val pureConfigVersion = "0.17.10"
 lazy val munitVersion      = "1.2.4"
 lazy val tsecVersion = "0.5.0"
+lazy val logbackVersion = "1.5.3"
+lazy val flywayVersion = "9.22.3"
 
 lazy val root = (project in file("."))
   .settings(
@@ -35,7 +37,11 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-postgres" % doobieVersion,
       "org.tpolecat" %% "doobie-hikari"   % doobieVersion,
 
+      "org.flywaydb" % "flyway-core" % flywayVersion,
+
       "com.github.pureconfig" %% "pureconfig-generic-scala3" % pureConfigVersion,
+
+      "ch.qos.logback" % "logback-classic" % logbackVersion,
 
       "org.scalameta" %% "munit"             % munitVersion % Test,
       "org.typelevel" %% "munit-cats-effect" % "2.0.0"      % Test

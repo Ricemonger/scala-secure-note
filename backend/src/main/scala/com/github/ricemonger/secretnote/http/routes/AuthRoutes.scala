@@ -11,14 +11,14 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.typelevel.log4cats.Logger
 
-case class AuthPayload(username: String, passwordAttempt: String)
+case class AuthPayload(username: String, password: String)
 
 class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F]) extends Http4sDsl[F] {
 
   private val registerEndpoint: HttpRoutes[F] = HttpRoutes.of[F] {
     case req@POST -> Root => for {
       payload <- req.as[AuthPayload]
-      jwt <- authService.register(payload.username, payload.passwordAttempt)
+      jwt <- authService.register(payload.username, payload.password)
       resp <- Ok(jwt)
     } yield resp
   }
@@ -26,7 +26,7 @@ class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F]) extends
   private val loginEndpoint: HttpRoutes[F] = HttpRoutes.of[F] {
     case req@POST -> Root => for {
       payload <- req.as[AuthPayload]
-      jwt <- authService.login(payload.username, payload.passwordAttempt)
+      jwt <- authService.login(payload.username, payload.password)
       resp <- Ok(jwt)
     } yield resp
   }
