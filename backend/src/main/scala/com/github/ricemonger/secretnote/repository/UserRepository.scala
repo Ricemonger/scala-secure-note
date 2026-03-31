@@ -12,7 +12,8 @@ object UserRepository {
 
   trait UserRepository[F[_]] {
     def insertCredentials(userCredentials: UserCredentials): F[Option[User]]
-    def selectCredentialsByUsername(username: String): F[Option[UserCredentials]]
+
+    def selectByUsername(username: String): F[Option[User]]
     
     def updateNoteById(id: UUID, secretNote: String): F[Option[User]]
     def selectNoteById(id: UUID): F[Option[Option[String]]]
@@ -33,10 +34,10 @@ object UserRepository {
         .option
         .transact(xa)
     }
-    
-    def selectCredentialsByUsername(username: String): F[Option[UserCredentials]] = {
-      sql"SELECT username, password_hash FROM users WHERE username = $username"
-        .query[UserCredentialsProjection]
+
+    def selectByUsername(username: String): F[Option[User]] = {
+      sql"SELECT id, username, password_hash, secret_note FROM users WHERE username = $username"
+        .query[UserEntity]
         .map(_.toDomain)
         .option
         .transact(xa)

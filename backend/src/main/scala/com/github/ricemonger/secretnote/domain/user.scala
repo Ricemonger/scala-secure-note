@@ -13,6 +13,10 @@ object user {
   
   case class UserCredentials(
                               username: String,
-                              passwordHash: String,
+                              passwordHash: String
                             )
+
+  case class UserJwtPayload(
+                             id: UUID
+                           )
 }

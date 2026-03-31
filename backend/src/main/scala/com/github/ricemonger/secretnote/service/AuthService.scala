@@ -12,6 +12,7 @@ import tsec.passwordhashers.PasswordHash
 import tsec.passwordhashers.jca.BCrypt
 
 import java.time.Instant
+import java.util.UUID
 
 object AuthService {
 
@@ -22,9 +23,9 @@ object AuthService {
 
   class LiveAuthService[F[_] : Sync](repo: UserRepository[F], config: JwtConfig) extends AuthService[F] {
 
-    private def generateJwt(username: String): F[String] = Sync[F].delay {
+    private def generateJwt(id: UUID): F[String] = Sync[F].delay {
       val claim = JwtClaim(
-        content = s"""{"username": "$username"}""",
+        content = s"""{"id": "$id"}""",
         expiration = Some(Instant.now().plusSeconds(config.expiration).getEpochSecond),
         issuedAt = Some(Instant.now().getEpochSecond)
       )
@@ -39,7 +40,7 @@ object AuthService {
         userOpt <- repo.insertCredentials(UserCredentials(username, passwordHash))
 
         jwt <- userOpt match {
-          case Some(_) => generateJwt(username)
+          case Some(user) => generateJwt(user.id)
           case None => UserAlreadyExistsException(username).raiseError[F, String]
         }
       } yield jwt
@@ -47,15 +48,15 @@ object AuthService {
 
     def login(username: String, passwordAttempt: String): F[String] = {
       for {
-        credentialsOpt <- repo.selectCredentialsByUsername(username)
-        credentials <- credentialsOpt.liftTo[F](InvalidUserCredentialsException())
+        userOpt <- repo.selectByUsername(username)
+        user <- userOpt.liftTo[F](InvalidUserCredentialsException())
 
         isValid <- BCrypt.checkpw[F](
           passwordAttempt,
-          PasswordHash[BCrypt](credentials.passwordHash)
+          PasswordHash[BCrypt](user.passwordHash)
         )
 
-        jwt <- if (isValid == Verified) generateJwt(username)
+        jwt <- if (isValid == Verified) generateJwt(user.id)
         else InvalidUserCredentialsException().raiseError[F, String]
       } yield jwt
     }
