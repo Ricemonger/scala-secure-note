@@ -1,6 +1,6 @@
 package com.github.ricemonger.secretnote.repository
 
-import com.github.ricemonger.secretnote.domain.user.{User, UserCredentials, UserInfo}
+import com.github.ricemonger.secretnote.domain.user.{User, UserCredentials}
 
 import java.util.UUID
 
@@ -18,22 +18,6 @@ private[repository] case class UserEntity(
   )
 }
 
-private[repository] case class UserInfoProjection(
-                                                   username: String,
-                                                   password_hash: String,
-                                                   secret_note: String
-                                                 )
-
-private[repository] object UserInfoProjection {
-  def fromDomain(userInfo: UserInfo): UserInfoProjection = {
-    UserInfoProjection(
-      username = userInfo.username,
-      password_hash = userInfo.passwordHash,
-      secret_note = userInfo.secretNote
-    )
-  }
-}
-
 private[repository] case class UserCredentialsProjection(
                                                           username: String,
                                                           password_hash: String,
@@ -42,5 +26,14 @@ private[repository] case class UserCredentialsProjection(
     username = this.username,
     passwordHash = this.password_hash,
   )
+}
+
+private[repository] object UserCredentialsProjection {
+  def fromDomain(userCredentials: UserCredentials): UserCredentialsProjection = {
+    UserCredentialsProjection(
+      username = userCredentials.username,
+      password_hash = userCredentials.passwordHash
+    )
+  }
 }
 

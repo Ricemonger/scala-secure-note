@@ -10,12 +10,6 @@ object user {
                    passwordHash: String,
                    secretNote: String
                  )
-
-  case class UserInfo(
-                       username: String,
-                       passwordHash: String,
-                       secretNote: String
-                     )
   
   case class UserCredentials(
                               username: String,
