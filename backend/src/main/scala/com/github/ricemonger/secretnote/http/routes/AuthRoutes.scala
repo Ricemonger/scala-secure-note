@@ -1,9 +1,11 @@
 package com.github.ricemonger.secretnote.http.routes
 
 import cats.Monad
+import cats.effect.Concurrent
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
+import org.typelevel.log4cats.Logger
 
 class AuthRoutes[F[_] : Monad] private extends Http4sDsl[F] {
   
@@ -24,5 +26,5 @@ class AuthRoutes[F[_] : Monad] private extends Http4sDsl[F] {
 }
 
 object AuthRoutes {
-  def apply[F[_] : Monad] = new AuthRoutes[F]
+  def apply[F[_] : {Concurrent, Logger}] = new AuthRoutes[F]
 }
