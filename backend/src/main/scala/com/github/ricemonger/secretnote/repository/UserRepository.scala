@@ -11,39 +11,33 @@ import java.util.UUID
 object UserRepository {
 
   trait UserRepository[F[_]] {
-    def selectNoteById(id: UUID): F[Option[Option[String]]]
+    def insertCredentials(userCredentials: UserCredentials): F[Option[User]]
 
     def selectCredentialsByUsername(username: String): F[Option[UserCredentials]]
 
-    def insert(userCredentials: UserCredentials): F[Option[User]]
-
     def updateNoteById(id: UUID, secretNote: String): F[Option[User]]
+    def selectNoteById(id: UUID): F[Option[Option[String]]]
   }
 
   class LiveUserRepository[F[_] : Async](xa: Transactor[F]) extends UserRepository[F] {
 
-    def selectNoteById(id: UUID): F[Option[Option[String]]] =
-      sql"SELECT secret_note FROM users WHERE id = $id"
-        .query[Option[String]] 
-        .option                
-        .transact(xa)
-
-    def selectCredentialsByUsername(username: String): F[Option[UserCredentials]] = {
-      sql"SELECT username, password_hash FROM users WHERE username = $username"
-        .query[UserCredentialsProjection]
+    def insertCredentials(userCredentials: UserCredentials): F[Option[User]] = {
+      val proj = UserCredentialsProjection.fromDomain(userCredentials)
+      sql"""
+              INSERT INTO users (id, username, password_hash)
+              VALUES (gen_random_uuid(), ${proj.username}, ${proj.password_hash})
+              ON CONFLICT (username) DO NOTHING
+              RETURNING id, username, password_hash, secret_note
+             """
+        .query[UserEntity]
         .map(_.toDomain)
         .option
         .transact(xa)
     }
-
-    def insert(userCredentials: UserCredentials): F[Option[User]] = {
-      val proj = UserCredentialsProjection.fromDomain(userCredentials)
-      sql"""
-          INSERT INTO users (id, username, password_hash)
-          VALUES (gen_random_uuid(), ${proj.username}, ${proj.password_hash})
-          RETURNING id, username, password_hash, secret_note
-         """
-        .query[UserEntity]
+    
+    def selectCredentialsByUsername(username: String): F[Option[UserCredentials]] = {
+      sql"SELECT username, password_hash FROM users WHERE username = $username"
+        .query[UserCredentialsProjection]
         .map(_.toDomain)
         .option
         .transact(xa)
@@ -61,5 +55,12 @@ object UserRepository {
         .option
         .transact(xa)
     }
+
+    def selectNoteById(id: UUID): F[Option[Option[String]]] =
+      sql"SELECT secret_note FROM users WHERE id = $id"
+        .query[Option[String]]
+        .option
+        .transact(xa)
+
   }
 }
