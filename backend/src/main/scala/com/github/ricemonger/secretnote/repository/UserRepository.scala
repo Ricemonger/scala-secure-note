@@ -12,9 +12,8 @@ object UserRepository {
 
   trait UserRepository[F[_]] {
     def insertCredentials(userCredentials: UserCredentials): F[Option[User]]
-
     def selectCredentialsByUsername(username: String): F[Option[UserCredentials]]
-
+    
     def updateNoteById(id: UUID, secretNote: String): F[Option[User]]
     def selectNoteById(id: UUID): F[Option[Option[String]]]
   }

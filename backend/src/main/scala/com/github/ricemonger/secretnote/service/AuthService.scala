@@ -1,34 +1,63 @@
 package com.github.ricemonger.secretnote.service
 
-import cats.MonadThrow
+import cats.effect.Sync
 import cats.syntax.all.*
+import com.github.ricemonger.secretnote.config.JwtConfig
 import com.github.ricemonger.secretnote.domain.user.UserCredentials
 import com.github.ricemonger.secretnote.exception.{InvalidUserCredentialsException, UserAlreadyExistsException}
 import com.github.ricemonger.secretnote.repository.UserRepository.UserRepository
+import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
+import tsec.common.Verified
+import tsec.passwordhashers.PasswordHash
+import tsec.passwordhashers.jca.BCrypt
+
+import java.time.Instant
 
 object AuthService {
 
   trait AuthService[F[_]] {
     def register(username: String, passwordAttempt: String): F[String]
-
     def login(username: String, passwordAttempt: String): F[String]
   }
 
-  class LiveAuthService[F[_] : MonadThrow](repo: UserRepository[F]) extends AuthService[F] {
+  class LiveAuthService[F[_] : Sync](repo: UserRepository[F], config: JwtConfig) extends AuthService[F] {
 
-    def register(username: String, passwordAttempt: String): F[String] = {
+    private def generateJwt(username: String): F[String] = Sync[F].delay {
+      val claim = JwtClaim(
+        content = s"""{"username": "$username"}""",
+        expiration = Some(Instant.now().plusSeconds(config.expiration).getEpochSecond),
+        issuedAt = Some(Instant.now().getEpochSecond)
+      )
 
-      val passwordHash = passwordAttempt
-
-      repo.insertCredentials(UserCredentials(username, passwordHash)).flatMap {
-        case Some(user) => "jwt".pure[F]
-        case None => UserAlreadyExistsException(username).raiseError[F, String]
-      }
+      JwtCirce.encode(claim, config.secret, JwtAlgorithm.HS256)
     }
 
-    def login(username: String, passwordAttempt: String): F[String] = repo.selectCredentialsByUsername(username).flatMap {
-      case Some(credentials) if credentials.passwordHash == passwordAttempt => "jwt".pure[F]
-      case _ => InvalidUserCredentialsException().raiseError[F, String]
+    def register(username: String, passwordAttempt: String): F[String] = {
+      for {
+        passwordHash <- BCrypt.hashpw[F](passwordAttempt)
+
+        userOpt <- repo.insertCredentials(UserCredentials(username, passwordHash))
+
+        jwt <- userOpt match {
+          case Some(_) => generateJwt(username)
+          case None => UserAlreadyExistsException(username).raiseError[F, String]
+        }
+      } yield jwt
+    }
+
+    def login(username: String, passwordAttempt: String): F[String] = {
+      for {
+        credentialsOpt <- repo.selectCredentialsByUsername(username)
+        credentials <- credentialsOpt.liftTo[F](InvalidUserCredentialsException())
+
+        isValid <- BCrypt.checkpw[F](
+          passwordAttempt,
+          PasswordHash[BCrypt](credentials.passwordHash)
+        )
+
+        jwt <- if (isValid == Verified) generateJwt(username)
+        else InvalidUserCredentialsException().raiseError[F, String]
+      } yield jwt
     }
   }
 }

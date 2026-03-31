@@ -9,6 +9,7 @@ lazy val doobieVersion     = "1.0.0-RC8"
 lazy val jwtScalaVersion   = "11.0.3"
 lazy val pureConfigVersion = "0.17.10"
 lazy val munitVersion      = "1.2.4"
+lazy val tsecVersion = "0.5.0"
 
 lazy val root = (project in file("."))
   .settings(
@@ -27,6 +28,8 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-parser"  % circeVersion,
 
       "com.github.jwt-scala" %% "jwt-circe" % jwtScalaVersion,
+
+      "io.github.jmcardon" %% "tsec-password" % tsecVersion,
 
       "org.tpolecat" %% "doobie-core"     % doobieVersion,
       "org.tpolecat" %% "doobie-postgres" % doobieVersion,
