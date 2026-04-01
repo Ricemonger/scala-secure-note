@@ -25,8 +25,8 @@ class NotesRoutes[F[_] : Concurrent] private(noteService: NoteService[F]) extend
     case req@PUT -> Root as jwtPayload =>
       for {
         payload <- req.req.as[NotePayload]
-        _ <- noteService.updateSecretNote(jwtPayload.id, payload.secretNote)
-        resp <- Ok("Note updated successfully")
+        updatedUser <- noteService.updateSecretNote(jwtPayload.id, payload.secretNote)
+        resp <- Ok(NotePayload(updatedUser.secretNote))
       } yield resp
   }
 }

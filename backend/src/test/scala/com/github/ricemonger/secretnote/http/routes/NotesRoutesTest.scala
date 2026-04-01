@@ -14,7 +14,7 @@ import org.typelevel.log4cats.noop.NoOpLogger
 import java.util.UUID
 
 class NotesRoutesTest extends CatsEffectSuite {
-  
+
   implicit val logger: Logger[IO] = NoOpLogger[IO]
 
   class FakeNoteService(
@@ -44,7 +44,8 @@ class NotesRoutesTest extends CatsEffectSuite {
     }
   }
 
-  test("PUT / updates note and returns 200 OK success message") {
+  test("PUT / updates note and returns 200 OK with the updated NotePayload") {
+    val expectedUpdatedNote = "updated note"
     val service = new FakeNoteService()
     val authedRoutes = NotesRoutes[IO](service).authedRoutes
 
@@ -55,10 +56,10 @@ class NotesRoutesTest extends CatsEffectSuite {
     for {
       respOpt <- authedRoutes.run(authedReq).value
       resp = respOpt.get
-      body <- resp.as[String]
+      body <- resp.as[NotePayload]
     } yield {
       assertEquals(resp.status, Status.Ok)
-      assert(body.contains("Note updated successfully"))
+      assertEquals(body.secretNote, expectedUpdatedNote)
     }
   }
 }

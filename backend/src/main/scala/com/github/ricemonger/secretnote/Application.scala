@@ -4,17 +4,17 @@ import cats.effect.*
 import com.github.ricemonger.secretnote.config.syntax.loadF
 import com.github.ricemonger.secretnote.config.{DatabaseConfig, EmberConfig, JwtConfig}
 import com.github.ricemonger.secretnote.http.auth.JwtAuthMiddleware
-import com.github.ricemonger.secretnote.http.routes.{AuthRoutes, GlobalErrorHandler, NotesRoutes}
+import com.github.ricemonger.secretnote.http.routes.{AuthRoutes, GlobalRoutesErrorHandler, NotesRoutes}
 import com.github.ricemonger.secretnote.repository.UserRepository.LiveUserRepository
 import com.github.ricemonger.secretnote.service.AuthService.LiveAuthService
 import com.github.ricemonger.secretnote.service.NoteService.LiveNoteService
 import doobie.hikari.HikariTransactor
+import org.flywaydb.core.Flyway
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import pureconfig.ConfigSource
-import org.flywaydb.core.Flyway
 
 import java.util.TimeZone
 import scala.concurrent.ExecutionContext
@@ -51,8 +51,8 @@ object Application extends IOApp.Simple {
       securedNotesRoutes = authMiddleware(notesRoutes.authedRoutes)
 
       httpApp = Router(
-        "" -> GlobalErrorHandler(authRoutes.routes),
-        "/notes" -> GlobalErrorHandler(securedNotesRoutes)
+        "" -> GlobalRoutesErrorHandler(authRoutes.routes),
+        "/notes" -> GlobalRoutesErrorHandler(securedNotesRoutes)
       ).orNotFound
 
       server <- EmberServerBuilder

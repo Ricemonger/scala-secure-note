@@ -12,7 +12,7 @@ lazy val munitVersion      = "1.2.4"
 lazy val munitCatsEffectVersion = "2.2.0"
 lazy val tsecVersion = "0.5.0"
 lazy val logbackVersion = "1.5.32"
-lazy val flywayVersion = "12.3.0"
+lazy val flywayVersion = "9.22.3"
 lazy val testcontainersVersion = "0.44.1"
 
 lazy val root = (project in file("."))

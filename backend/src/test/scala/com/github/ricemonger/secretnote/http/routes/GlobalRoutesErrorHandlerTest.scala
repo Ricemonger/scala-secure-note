@@ -9,7 +9,7 @@ import org.http4s.implicits.uri
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.noop.NoOpLogger
 
-class GlobalErrorHandlerTest extends CatsEffectSuite {
+class GlobalRoutesErrorHandlerTest extends CatsEffectSuite {
 
   implicit val logger: Logger[IO] = NoOpLogger[IO]
 
@@ -18,7 +18,7 @@ class GlobalErrorHandlerTest extends CatsEffectSuite {
   }
 
   test("maps InvalidUserCredentialsException to 403 Forbidden") {
-    val route = GlobalErrorHandler[IO](failingRoute(InvalidUserCredentialsException()))
+    val route = GlobalRoutesErrorHandler[IO](failingRoute(InvalidUserCredentialsException()))
     val req = Request[IO](Method.GET, uri"/")
 
     for {
@@ -27,7 +27,7 @@ class GlobalErrorHandlerTest extends CatsEffectSuite {
   }
 
   test("maps UserAlreadyExistsException to 409 Conflict") {
-    val route = GlobalErrorHandler[IO](failingRoute(UserAlreadyExistsException("testUser")))
+    val route = GlobalRoutesErrorHandler[IO](failingRoute(UserAlreadyExistsException("testUser")))
     val req = Request[IO](Method.GET, uri"/")
 
     for {
@@ -36,7 +36,7 @@ class GlobalErrorHandlerTest extends CatsEffectSuite {
   }
 
   test("maps UserNotFoundException to 404 NotFound") {
-    val route = GlobalErrorHandler[IO](failingRoute(UserNotFoundException("testUser")))
+    val route = GlobalRoutesErrorHandler[IO](failingRoute(UserNotFoundException("testUser")))
     val req = Request[IO](Method.GET, uri"/")
 
     for {
@@ -44,8 +44,26 @@ class GlobalErrorHandlerTest extends CatsEffectSuite {
     } yield assertEquals(resp.status, Status.NotFound)
   }
 
+  test("maps MessageFailure with DecodingFailure cause to formatted 400 BadRequest") {
+    import io.circe.{CursorOp, DecodingFailure}
+
+    val decodingFailure = DecodingFailure("Missing field", List(CursorOp.DownField("secretNote")))
+    val messageFailure = InvalidMessageBodyFailure("Could not decode JSON", Some(decodingFailure))
+
+    val route = GlobalRoutesErrorHandler[IO](failingRoute(messageFailure))
+    val req = Request[IO](Method.GET, uri"/")
+
+    for {
+      resp <- route.orNotFound.run(req)
+      body <- resp.as[String]
+    } yield {
+      assertEquals(resp.status, Status.BadRequest)
+      assertEquals(body, "Invalid input: Missing or invalid field at path '.secretNote'")
+    }
+  }
+
   test("maps unhandled exceptions to 500 InternalServerError") {
-    val route = GlobalErrorHandler[IO](failingRoute(new RuntimeException("Boom!")))
+    val route = GlobalRoutesErrorHandler[IO](failingRoute(new RuntimeException("Boom!")))
     val req = Request[IO](Method.GET, uri"/")
 
     for {

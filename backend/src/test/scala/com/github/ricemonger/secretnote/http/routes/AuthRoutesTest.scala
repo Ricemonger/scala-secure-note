@@ -1,7 +1,6 @@
 package com.github.ricemonger.secretnote.http.routes
 
 import cats.effect.IO
-import com.github.ricemonger.secretnote.exception.{InvalidUserCredentialsException, UserAlreadyExistsException}
 import com.github.ricemonger.secretnote.service.AuthService.AuthService
 import io.circe.generic.auto.*
 import munit.CatsEffectSuite
@@ -12,7 +11,7 @@ import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.noop.NoOpLogger
 
 class AuthRoutesTest extends CatsEffectSuite {
-  
+
   implicit val logger: Logger[IO] = NoOpLogger[IO]
 
   class FakeAuthService(
@@ -37,18 +36,6 @@ class AuthRoutesTest extends CatsEffectSuite {
     }
   }
 
-  test("POST /register mapped by GlobalErrorHandler returns 409 Conflict if user exists") {
-    val service = new FakeAuthService(registerResult = IO.raiseError(UserAlreadyExistsException("testUser")))
-    val routes = GlobalErrorHandler[IO](AuthRoutes[IO](service).routes)
-    val req = Request[IO](Method.POST, uri"/register").withEntity(AuthPayload("testUser", "password"))
-
-    for {
-      resp <- routes.orNotFound.run(req)
-    } yield {
-      assertEquals(resp.status, Status.Conflict)
-    }
-  }
-
   test("POST /login returns 200 OK and a JWT on valid credentials") {
     val service = new FakeAuthService(loginResult = IO.pure("login-token"))
     val routes = AuthRoutes[IO](service).routes
@@ -60,18 +47,6 @@ class AuthRoutesTest extends CatsEffectSuite {
     } yield {
       assertEquals(resp.status, Status.Ok)
       assertEquals(body.jwt, "login-token")
-    }
-  }
-
-  test("POST /login mapped by GlobalErrorHandler returns 403 Forbidden on invalid credentials") {
-    val service = new FakeAuthService(loginResult = IO.raiseError(InvalidUserCredentialsException()))
-    val routes = GlobalErrorHandler[IO](AuthRoutes[IO](service).routes)
-    val req = Request[IO](Method.POST, uri"/login").withEntity(AuthPayload("testUser", "wrongPass"))
-
-    for {
-      resp <- routes.orNotFound.run(req)
-    } yield {
-      assertEquals(resp.status, Status.Forbidden)
     }
   }
 }
