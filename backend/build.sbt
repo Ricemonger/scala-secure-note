@@ -45,5 +45,12 @@ lazy val root = (project in file("."))
 
       "org.scalameta" %% "munit"             % munitVersion % Test,
       "org.typelevel" %% "munit-cats-effect" % "2.0.0"      % Test
-    )
+    ),
+
+    assembly / assemblyMergeStrategy := {
+      case x if x.endsWith("module-info.class") => MergeStrategy.discard
+      case x =>
+        val oldStrategy = (assembly / assemblyMergeStrategy).value
+        oldStrategy(x)
+    }
   )

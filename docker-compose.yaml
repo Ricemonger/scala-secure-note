@@ -37,6 +37,7 @@ services:
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
+      SERVER_HOST: "0.0.0.0"
       SERVER_PORT: ${BACKEND_PORT}
     networks:
       - frontend_net
