@@ -3,15 +3,17 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.8.2"
 
 lazy val catsEffectVersion = "3.7.0"
-lazy val http4sVersion     = "0.23.32"
-lazy val circeVersion      = "0.14.14"
-lazy val doobieVersion     = "1.0.0-RC8"
+lazy val http4sVersion     = "0.23.33"
+lazy val circeVersion      = "0.14.15"
+lazy val doobieVersion     = "1.0.0-RC12"
 lazy val jwtScalaVersion   = "11.0.3"
 lazy val pureConfigVersion = "0.17.10"
 lazy val munitVersion      = "1.2.4"
+lazy val munitCatsEffectVersion = "2.2.0"
 lazy val tsecVersion = "0.5.0"
-lazy val logbackVersion = "1.5.3"
-lazy val flywayVersion = "9.22.3"
+lazy val logbackVersion = "1.5.32"
+lazy val flywayVersion = "12.3.0"
+lazy val testcontainersVersion = "0.44.1"
 
 lazy val root = (project in file("."))
   .settings(
@@ -44,10 +46,10 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % logbackVersion,
 
       "org.scalameta" %% "munit"             % munitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect" % "2.0.0"      % Test,
+      "org.typelevel" %% "munit-cats-effect" % munitCatsEffectVersion % Test,
 
-      "com.dimafeng" %% "testcontainers-scala-munit" % "0.44.1" % Test,
-      "com.dimafeng" %% "testcontainers-scala-postgresql" % "0.44.1" % Test
+      "com.dimafeng" %% "testcontainers-scala-munit" % testcontainersVersion % Test,
+      "com.dimafeng" %% "testcontainers-scala-postgresql" % testcontainersVersion % Test
     ),
 
     assembly / assemblyMergeStrategy := {
