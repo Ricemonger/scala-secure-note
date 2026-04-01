@@ -30,7 +30,7 @@ object Application extends IOApp.Simple {
     jwtConfig <- ConfigSource.default.at("jwt").loadF[IO, JwtConfig]
     dbConfig <- ConfigSource.default.at("database").loadF[IO, DatabaseConfig]
 
-    _ <- runMigrations(dbConfig)
+    _ <- runFlywayMigrations(dbConfig)
 
     _ <- (for {
       xa <- HikariTransactor.newHikariTransactor[IO](
@@ -67,7 +67,7 @@ object Application extends IOApp.Simple {
     }
   } yield ()
 
-  private def runMigrations(config: DatabaseConfig): IO[Unit] = IO.blocking {
+  private def runFlywayMigrations(config: DatabaseConfig): IO[Unit] = IO.blocking {
     Flyway
       .configure()
       .dataSource(config.url, config.user, config.password)
