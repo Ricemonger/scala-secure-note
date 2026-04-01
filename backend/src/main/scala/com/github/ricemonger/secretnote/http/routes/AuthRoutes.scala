@@ -12,6 +12,7 @@ import org.http4s.server.Router
 import org.typelevel.log4cats.Logger
 
 case class AuthPayload(username: String, password: String)
+case class JwtResponse(jwt: String)
 
 class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F]) extends Http4sDsl[F] {
 
@@ -19,7 +20,7 @@ class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F]) extends
     case req@POST -> Root => for {
       payload <- req.as[AuthPayload]
       jwt <- authService.register(payload.username, payload.password)
-      resp <- Ok(jwt)
+      resp <- Ok(JwtResponse(jwt))
     } yield resp
   }
 
@@ -27,7 +28,7 @@ class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F]) extends
     case req@POST -> Root => for {
       payload <- req.as[AuthPayload]
       jwt <- authService.login(payload.username, payload.password)
-      resp <- Ok(jwt)
+      resp <- Ok(JwtResponse(jwt))
     } yield resp
   }
 

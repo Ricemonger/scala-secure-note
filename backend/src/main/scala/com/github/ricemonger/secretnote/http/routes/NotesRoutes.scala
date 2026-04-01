@@ -4,9 +4,13 @@ import cats.effect.Concurrent
 import cats.syntax.all.*
 import com.github.ricemonger.secretnote.domain.user.{User, UserJwtPayload}
 import com.github.ricemonger.secretnote.service.NoteService.NoteService
+import io.circe.generic.auto.*
 import org.http4s.*
+import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.log4cats.Logger
+
+case class NotePayload(secretNote: String)
 
 class NotesRoutes[F[_] : Concurrent] private(noteService: NoteService[F]) extends Http4sDsl[F] {
 
@@ -15,13 +19,13 @@ class NotesRoutes[F[_] : Concurrent] private(noteService: NoteService[F]) extend
     case GET -> Root as jwtPayload =>
       for {
         note <- noteService.getSecretNote(jwtPayload.id)
-        resp <- Ok(note)
+        resp <- Ok(NotePayload(note))
       } yield resp
 
     case req@PUT -> Root as jwtPayload =>
       for {
-        noteText <- req.req.as[String]
-        _ <- noteService.updateSecretNote(jwtPayload.id, noteText)
+        payload <- req.req.as[NotePayload]
+        _ <- noteService.updateSecretNote(jwtPayload.id, payload.secretNote)
         resp <- Ok("Note updated successfully")
       } yield resp
   }
