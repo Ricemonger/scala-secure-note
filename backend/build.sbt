@@ -44,7 +44,10 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % logbackVersion,
 
       "org.scalameta" %% "munit"             % munitVersion % Test,
-      "org.typelevel" %% "munit-cats-effect" % "2.0.0"      % Test
+      "org.typelevel" %% "munit-cats-effect" % "2.0.0"      % Test,
+
+      "com.dimafeng" %% "testcontainers-scala-munit" % "0.44.1" % Test,
+      "com.dimafeng" %% "testcontainers-scala-postgresql" % "0.44.1" % Test
     ),
 
     assembly / assemblyMergeStrategy := {

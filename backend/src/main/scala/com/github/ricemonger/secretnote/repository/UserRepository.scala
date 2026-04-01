@@ -61,6 +61,5 @@ object UserRepository {
         .query[Option[String]]
         .option
         .transact(xa)
-
   }
 }
