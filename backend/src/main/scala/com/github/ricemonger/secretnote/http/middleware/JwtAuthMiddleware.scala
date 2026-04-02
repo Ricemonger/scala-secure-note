@@ -1,4 +1,4 @@
-package com.github.ricemonger.secretnote.http.auth
+package com.github.ricemonger.secretnote.http.middleware
 
 import cats.data.{Kleisli, OptionT}
 import cats.effect.Sync

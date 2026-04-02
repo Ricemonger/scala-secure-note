@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { Store } from '@reduxjs/toolkit';
 import { logger } from "./logger";
 import { RootState } from "./store";
-import { logoutUser } from "../features/authentication/authSlice"; // <-- Add this import
+import { logoutUser } from "../features/authentication/authSlice";
 
 const apiClient = axios.create({
     baseURL: process.env.REACT_APP_API_GATEWAY_BASE_URL,

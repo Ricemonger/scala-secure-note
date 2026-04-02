@@ -3,7 +3,7 @@ package com.github.ricemonger.secretnote
 import cats.effect.*
 import com.github.ricemonger.secretnote.config.syntax.loadF
 import com.github.ricemonger.secretnote.config.{DatabaseConfig, EmberConfig, JwtConfig}
-import com.github.ricemonger.secretnote.http.auth.JwtAuthMiddleware
+import com.github.ricemonger.secretnote.http.middleware.JwtAuthMiddleware
 import com.github.ricemonger.secretnote.http.routes.{AuthRoutes, GlobalRoutesErrorHandler, NotesRoutes}
 import com.github.ricemonger.secretnote.repository.UserRepository.LiveUserRepository
 import com.github.ricemonger.secretnote.service.AuthService.LiveAuthService
@@ -12,6 +12,8 @@ import doobie.hikari.HikariTransactor
 import org.flywaydb.core.Flyway
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
+import org.http4s.server.middleware.CORS
+import org.http4s.Method
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import pureconfig.ConfigSource
@@ -24,7 +26,7 @@ object Application extends IOApp.Simple {
   given Logger[IO] = Slf4jLogger.getLogger[IO]
 
   TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
-  
+
   override def run: IO[Unit] = for {
     emberConfig <- ConfigSource.default.at("ember").loadF[IO, EmberConfig]
     jwtConfig <- ConfigSource.default.at("jwt").loadF[IO, JwtConfig]
@@ -55,11 +57,18 @@ object Application extends IOApp.Simple {
         "/notes" -> GlobalRoutesErrorHandler(securedNotesRoutes)
       ).orNotFound
 
+      corsAllowedApp = CORS.policy
+        .withAllowOriginAll
+        .withAllowMethodsIn(Set(Method.GET, Method.POST, Method.PUT, Method.OPTIONS))
+        .withAllowHeadersAll
+        .withAllowCredentials(false)
+        .apply(httpApp)
+
       server <- EmberServerBuilder
         .default[IO]
         .withHost(emberConfig.host)
         .withPort(emberConfig.port)
-        .withHttpApp(httpApp)
+        .withHttpApp(corsAllowedApp)
         .build
 
     } yield server).use { _ =>

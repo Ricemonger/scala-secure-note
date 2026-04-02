@@ -1,4 +1,4 @@
-package com.github.ricemonger.secretnote.http.auth
+package com.github.ricemonger.secretnote.http.middleware
 
 import cats.effect.IO
 import com.github.ricemonger.secretnote.config.JwtConfig
