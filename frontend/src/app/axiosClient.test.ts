@@ -4,7 +4,6 @@ import {logger} from './logger';
 import {logoutUser} from '../features/authentication/authSlice';
 
 jest.mock('./logger');
-
 jest.mock('../features/authentication/authSlice');
 
 describe('axiosClient', () => {
@@ -78,48 +77,55 @@ describe('axiosClient', () => {
         const errorMessage = {message: 'Token expired'};
         axiosMockAdapter.onGet('/test').reply(401, errorMessage);
 
-        await expect(apiClient.get('/test')).rejects.toThrow(
-            `Unexpected Error Occurred: {"message":"${errorMessage.message}"}`
-        );
+        await expect(apiClient.get('/test')).rejects.toThrow('Token expired');
 
         expect(logger.warn).toHaveBeenCalledWith('Token expired or unauthorized access (401). Logging out.');
-
         expect(logoutUser).toHaveBeenCalled();
         expect(reduxMockStore.dispatch).toHaveBeenCalledWith(mockAction);
     });
 
-    it('setupAxiosInterceptors should handle API error from response', async () => {
+    it('setupAxiosInterceptors should handle plain string API errors from the Scala backend', async () => {
         reduxMockStore = {getState: jest.fn().mockReturnValue({auth: {}})};
-
         setupAxiosInterceptors(reduxMockStore);
 
-        const errorMessage = {message: 'Error message'};
+        const backendErrorMessage = 'User test already exists';
+
+        axiosMockAdapter.onGet('/test').reply(409, backendErrorMessage);
+
+        await expect(apiClient.get('/test')).rejects.toThrow(backendErrorMessage);
+
+        expect(logger.error).toHaveBeenCalledWith(
+            backendErrorMessage,
+            expect.objectContaining({url: '/test'})
+        );
+    });
+
+    it('setupAxiosInterceptors should handle JSON API error from response', async () => {
+        reduxMockStore = {getState: jest.fn().mockReturnValue({auth: {}})};
+        setupAxiosInterceptors(reduxMockStore);
+
+        const errorMessage = {message: 'A generic JSON error message'};
 
         axiosMockAdapter.onGet('/test').reply(400, errorMessage);
 
-        await expect(apiClient.get('/test')).rejects.toThrow(
-            `Unexpected Error Occurred: {"message":"${errorMessage.message}"}`
-        );
+        await expect(apiClient.get('/test')).rejects.toThrow(errorMessage.message);
 
         expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining(`Unexpected Error Occurred: {"message":"${errorMessage.message}"}`),
+            errorMessage.message,
             expect.objectContaining({url: '/test'})
         );
     });
 
     it('setupAxiosInterceptors should handle Network Errors from request', async () => {
         reduxMockStore = {getState: jest.fn().mockReturnValue({auth: {}})};
-
         setupAxiosInterceptors(reduxMockStore);
 
         axiosMockAdapter.onGet('/test').networkError();
 
-        await expect(apiClient.get('/test')).rejects.toThrow(
-            'Unexpected Error Occurred: Network Error'
-        );
+        await expect(apiClient.get('/test')).rejects.toThrow('Network Error (No response from server)');
 
         expect(logger.error).toHaveBeenCalledWith(
-            expect.stringContaining('Unexpected Error Occurred: Network Error'),
+            'Network Error (No response from server)',
             expect.objectContaining({url: '/test'})
         );
     });

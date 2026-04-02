@@ -36,16 +36,23 @@ export const setupAxiosInterceptors = (store: Store) => {
                 if (error.response) {
                     if (error.response.status === 401) {
                         logger.warn('Token expired or unauthorized access (401). Logging out.');
-
                         store.dispatch(logoutUser() as any);
                     }
 
                     const rawData = error.response.data;
-                    const stringifiedData = typeof rawData === 'object' ? JSON.stringify(rawData) : String(rawData);
-                    finalMessage = `Unexpected Error Occurred: ${stringifiedData}`;
+
+                    if (typeof rawData === 'string' && rawData.trim() !== '') {
+                        finalMessage = rawData;
+                    }
+                    else if (typeof rawData === 'object' && rawData !== null) {
+                        finalMessage = (rawData as any).message || JSON.stringify(rawData);
+                    }
+                    else {
+                        finalMessage = `Request failed with status code ${error.response.status}`;
+                    }
 
                 } else if (error.request) {
-                    finalMessage = 'Unexpected Error Occurred: Network Error (No response from server)';
+                    finalMessage = 'Network Error (No response from server)';
                 } else {
                     finalMessage = `Unexpected Error Occurred: ${error.message}`;
                 }
