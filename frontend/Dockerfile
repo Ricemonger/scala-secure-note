@@ -7,6 +7,12 @@ RUN npm ci
 
 COPY . .
 
+ARG REACT_APP_BACKEND_HOST
+ARG REACT_APP_BACKEND_PORT
+
+ENV REACT_APP_BACKEND_HOST=$REACT_APP_BACKEND_HOST
+ENV REACT_APP_BACKEND_PORT=$REACT_APP_BACKEND_PORT
+
 RUN npm run build
 
 FROM nginx:1.28.1-alpine3.23-slim AS runtime
@@ -23,7 +29,8 @@ RUN touch /var/run/nginx.pid && \
     chown -R nginx:nginx /var/run/nginx.pid /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx/conf.d
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD curl -f http://localhost:${SERVER_PORT}/ || exit 1
+  CMD curl -f http://localhost:${SERVER_PORT}/ || \
+exit 1
 
 USER nginx
 
