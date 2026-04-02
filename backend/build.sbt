@@ -12,7 +12,7 @@ lazy val munitVersion      = "1.2.4"
 lazy val munitCatsEffectVersion = "2.2.0"
 lazy val tsecVersion = "0.5.0"
 lazy val logbackVersion = "1.5.32"
-lazy val flywayVersion = "9.22.3"
+lazy val flywayVersion = "12.3.0"
 lazy val testcontainersVersion = "0.44.1"
 
 lazy val root = (project in file("."))
@@ -40,6 +40,7 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-hikari"   % doobieVersion,
 
       "org.flywaydb" % "flyway-core" % flywayVersion,
+      "org.flywaydb" % "flyway-database-postgresql" % flywayVersion,
 
       "com.github.pureconfig" %% "pureconfig-generic-scala3" % pureConfigVersion,
 
@@ -51,6 +52,8 @@ lazy val root = (project in file("."))
       "com.dimafeng" %% "testcontainers-scala-munit" % testcontainersVersion % Test,
       "com.dimafeng" %% "testcontainers-scala-postgresql" % testcontainersVersion % Test
     ),
+
+    assembly / assemblyJarName := "backend-app.jar",
 
     assembly / assemblyMergeStrategy := {
       case x if x.endsWith("module-info.class") => MergeStrategy.discard

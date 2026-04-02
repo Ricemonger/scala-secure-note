@@ -72,7 +72,7 @@ export const SecretNotePage: React.FC = () => {
                             variant="outlined"
                             value={draft}
                             onChange={(e) => setDraft(e.target.value)}
-                            placeholder="Write your secrets here..."
+                            placeholder="Write your secret note here..."
                             autoFocus
                             disabled={operationLoading}
                         />
@@ -116,7 +116,7 @@ export const SecretNotePage: React.FC = () => {
                             <CircularProgress />
                         ) : (
                             <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                                {note || "You don't have a secret note yet. Click edit to create one!"}
+                                {note || "Your secret note is empty."}
                             </Typography>
                         )}
                     </Box>
