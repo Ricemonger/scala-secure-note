@@ -1,8 +1,13 @@
 import MockAdapter from 'axios-mock-adapter';
 import apiClient, {setupAxiosInterceptors} from './axiosClient';
 import {logger} from './logger';
+import {logoutUser} from '../features/authentication/authSlice';
 
 jest.mock('./logger');
+
+jest.mock('../features/authentication/authSlice', () => ({
+    logoutUser: jest.fn(() => ({ type: 'mocked_logout_action' })),
+}));
 
 describe('axiosClient', () => {
     let axiosMockAdapter: MockAdapter;
@@ -59,6 +64,27 @@ describe('axiosClient', () => {
         await apiClient.get('/test');
 
         expect(axiosMockAdapter.history.get[0].headers?.Authorization).toBeUndefined();
+    });
+
+    it('setupAxiosInterceptors should dispatch logoutUser on 401 Unauthorized response', async () => {
+        reduxMockStore = {
+            getState: jest.fn().mockReturnValue({auth: {}}),
+            dispatch: jest.fn()
+        };
+
+        setupAxiosInterceptors(reduxMockStore);
+
+        const errorMessage = {message: 'Token expired'};
+        axiosMockAdapter.onGet('/test').reply(401, errorMessage);
+
+        await expect(apiClient.get('/test')).rejects.toThrow(
+            `Unexpected Error Occurred: {"message":"${errorMessage.message}"}`
+        );
+
+        expect(logger.warn).toHaveBeenCalledWith('Token expired or unauthorized access (401). Logging out.');
+
+        expect(logoutUser).toHaveBeenCalled();
+        expect(reduxMockStore.dispatch).toHaveBeenCalledWith({ type: 'mocked_logout_action' });
     });
 
     it('setupAxiosInterceptors should handle API error from response', async () => {

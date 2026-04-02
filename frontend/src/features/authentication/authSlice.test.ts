@@ -1,14 +1,6 @@
-import authReducer, {
-    register,
-    login,
-    setCredentials,
-    logout,
-    selectUserId,
-    logoutUser
-} from './authSlice';
-import { authService } from './authService';
-import { jwtDecode } from 'jwt-decode';
-import { UserProfile } from './authSlice';
+import authReducer, {login, logout, logoutUser, register, selectUserId, setCredentials, UserProfile} from './authSlice';
+import {authService} from './authService';
+import {jwtDecode} from 'jwt-decode';
 
 jest.mock('./authService');
 jest.mock('jwt-decode', () => ({
@@ -29,10 +21,12 @@ describe('authSlice', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        Storage.prototype.setItem = jest.fn();
+        Storage.prototype.removeItem = jest.fn();
     });
 
     describe('Thunk: register', () => {
-        it('should call service and update state on fulfillment', async () => {
+        it('should call service, save token to localStorage, and update state on fulfillment', async () => {
             const mockToken = 'mock-jwt-token';
             mockService.register.mockResolvedValue(mockToken);
 
@@ -44,9 +38,10 @@ describe('authSlice', () => {
 
             expect(result.payload).toBe(mockToken);
             expect(mockService.register).toHaveBeenCalledWith(params.username, params.password);
+            expect(localStorage.setItem).toHaveBeenCalledWith('jwt_token', mockToken);
         });
 
-        it('should reject if service throws error', async () => {
+        it('should reject if service throws error and not touch localStorage', async () => {
             const errorMessage = 'Registration failed';
             mockService.register.mockRejectedValue(new Error(errorMessage));
 
@@ -58,11 +53,12 @@ describe('authSlice', () => {
 
             expect(result.meta.requestStatus).toBe('rejected');
             expect(result.payload).toBe(errorMessage);
+            expect(localStorage.setItem).not.toHaveBeenCalled();
         });
     });
 
     describe('Thunk: login', () => {
-        it('should call service and update state on fulfillment', async () => {
+        it('should call service, save token to localStorage, and update state on fulfillment', async () => {
             const mockToken = 'mock-jwt-token';
             mockService.login.mockResolvedValue(mockToken);
 
@@ -74,9 +70,10 @@ describe('authSlice', () => {
 
             expect(result.payload).toBe(mockToken);
             expect(mockService.login).toHaveBeenCalledWith(params.username, params.password);
+            expect(localStorage.setItem).toHaveBeenCalledWith('jwt_token', mockToken);
         });
 
-        it('should reject if service throws error', async () => {
+        it('should reject if service throws error and not touch localStorage', async () => {
             const errorMessage = 'Login failed';
             mockService.login.mockRejectedValue(new Error(errorMessage));
 
@@ -88,6 +85,7 @@ describe('authSlice', () => {
 
             expect(result.meta.requestStatus).toBe('rejected');
             expect(result.payload).toBe(errorMessage);
+            expect(localStorage.setItem).not.toHaveBeenCalled();
         });
     });
 
@@ -207,10 +205,11 @@ describe('authSlice', () => {
             expect(selectUserId(state)).toBeUndefined();
         });
 
-        it('logoutUser should dispatch the logout action', () => {
+        it('logoutUser should remove token from localStorage and dispatch logout', () => {
             const dispatch = jest.fn();
             logoutUser()(dispatch);
 
+            expect(localStorage.removeItem).toHaveBeenCalledWith('jwt_token');
             expect(dispatch).toHaveBeenCalledWith(logout());
         });
     });

@@ -30,7 +30,9 @@ export const register = createAsyncThunk<
     'auth/register',
     async (params, thunkAPI) => {
         try {
-            return await authService.register(params.username, params.password);
+            const token = await authService.register(params.username, params.password);
+            localStorage.setItem('jwt_token', token);
+            return token;
         } catch (err: any) {
             return thunkAPI.rejectWithValue(err.message || `Failed to register with username: ${params.username}`);
         }
@@ -45,7 +47,9 @@ export const login = createAsyncThunk<
     'auth/login',
     async (params, thunkAPI) => {
         try {
-            return await authService.login(params.username, params.password);
+            const token = await authService.login(params.username, params.password);
+            localStorage.setItem('jwt_token', token);
+            return token;
         } catch (err: any) {
             return thunkAPI.rejectWithValue(err.message || `Failed to login with username: ${params.username}`);
         }
@@ -82,6 +86,7 @@ const authSlice = createSlice({
                 state.token = action.payload;
                 state.userProfile = jwtDecode<UserProfile>(action.payload);
                 state.isAuthenticated = true;
+
             })
             .addCase(register.rejected, (state, action) => {
                 state.operationLoading = false;
@@ -110,6 +115,7 @@ export const selectUserId = (state: { auth: AuthState }): string | undefined => 
 };
 
 export const logoutUser = () => (dispatch: any) => {
+    localStorage.removeItem('jwt_token');
     dispatch(logout());
 };
 

@@ -1,7 +1,8 @@
-import axios, {AxiosError} from 'axios';
-import {Store} from '@reduxjs/toolkit';
-import {logger} from "./logger";
-import {RootState} from "./store";
+import axios, { AxiosError } from 'axios';
+import { Store } from '@reduxjs/toolkit';
+import { logger } from "./logger";
+import { RootState } from "./store";
+import { logoutUser } from "../features/authentication/authSlice"; // <-- Add this import
 
 const apiClient = axios.create({
     baseURL: process.env.REACT_APP_API_GATEWAY_BASE_URL,
@@ -32,8 +33,13 @@ export const setupAxiosInterceptors = (store: Store) => {
             let finalMessage = 'Unexpected Error Occurred';
 
             if (axios.isAxiosError(error)) {
-
                 if (error.response) {
+                    if (error.response.status === 401) {
+                        logger.warn('Token expired or unauthorized access (401). Logging out.');
+
+                        store.dispatch(logoutUser() as any);
+                    }
+
                     const rawData = error.response.data;
                     const stringifiedData = typeof rawData === 'object' ? JSON.stringify(rawData) : String(rawData);
                     finalMessage = `Unexpected Error Occurred: ${stringifiedData}`;
@@ -47,6 +53,7 @@ export const setupAxiosInterceptors = (store: Store) => {
             } else {
                 finalMessage = `Unexpected Error Occurred: ${error.message}`;
             }
+
             logger.error(finalMessage, {
                 originalError: error,
                 url: axios.isAxiosError(error) ? error.config?.url : 'unknown'
