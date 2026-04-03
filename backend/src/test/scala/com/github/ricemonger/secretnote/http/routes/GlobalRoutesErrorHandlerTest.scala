@@ -58,7 +58,7 @@ class GlobalRoutesErrorHandlerTest extends CatsEffectSuite {
       body <- resp.as[String]
     } yield {
       assertEquals(resp.status, Status.BadRequest)
-      assertEquals(body, "Invalid input: Missing or invalid field at path '.secretNote'")
+      assertEquals(body, "Invalid input: Field at path '.secretNote' is invalid: Missing field")
     }
   }
 

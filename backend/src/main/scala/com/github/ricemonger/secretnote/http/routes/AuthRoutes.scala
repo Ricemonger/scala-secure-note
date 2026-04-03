@@ -2,8 +2,10 @@ package com.github.ricemonger.secretnote.http.routes
 
 import cats.effect.Concurrent
 import cats.syntax.all.*
+import com.github.ricemonger.secretnote.config.ConstraintConfig
 import com.github.ricemonger.secretnote.exception.{InvalidUserCredentialsException, UserAlreadyExistsException}
 import com.github.ricemonger.secretnote.service.AuthService.AuthService
+import io.circe.{Decoder, DecodingFailure, HCursor}
 import io.circe.generic.auto.*
 import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.*
@@ -14,7 +16,23 @@ import org.typelevel.log4cats.Logger
 case class AuthPayload(username: String, password: String)
 case class JwtResponse(jwt: String)
 
-class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F]) extends Http4sDsl[F] {
+class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F], constraintConfig: ConstraintConfig) extends Http4sDsl[F] {
+
+  given Decoder[AuthPayload] = (c: HCursor) => for {
+    username <- c.downField("username").as[String]
+    _ <- Either.cond(
+      username.matches(constraintConfig.usernameRegex),
+      (),
+      DecodingFailure(constraintConfig.usernameMessage, c.downField("username").history)
+    )
+
+    password <- c.downField("password").as[String]
+    _ <- Either.cond(
+      password.matches(constraintConfig.passwordRegex),
+      (),
+      DecodingFailure(constraintConfig.passwordMessage, c.downField("password").history)
+    )
+  } yield AuthPayload(username, password)
 
   private val registerEndpoint: HttpRoutes[F] = HttpRoutes.of[F] {
     case req@POST -> Root => for {
@@ -39,5 +57,6 @@ class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F]) extends
 }
 
 object AuthRoutes {
-  def apply[F[_] : {Concurrent, Logger}](authService: AuthService[F]) = new AuthRoutes[F](authService)
+  def apply[F[_] : {Concurrent, Logger}](authService: AuthService[F], constraintConfig: ConstraintConfig) =
+    new AuthRoutes[F](authService, constraintConfig)
 }

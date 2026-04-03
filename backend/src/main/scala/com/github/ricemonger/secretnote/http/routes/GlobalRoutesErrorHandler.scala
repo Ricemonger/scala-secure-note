@@ -38,10 +38,10 @@ object GlobalRoutesErrorHandler {
   private def extractMessageFailureCause(e: MessageFailure): String = e.getCause match {
     case df: DecodingFailure =>
       val path = CursorOp.opsToPath(df.history)
-      s"Missing or invalid field at path '$path'"
+      s"Field at path '$path' is invalid: ${df.message}"
     case cause if cause != null =>
       cause.getMessage
     case _ =>
-      e.getMessage()
+      e.getMessage
   }
 }

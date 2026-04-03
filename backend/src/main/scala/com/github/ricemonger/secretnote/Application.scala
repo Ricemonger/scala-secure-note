@@ -2,7 +2,7 @@ package com.github.ricemonger.secretnote
 
 import cats.effect.*
 import com.github.ricemonger.secretnote.config.syntax.loadF
-import com.github.ricemonger.secretnote.config.{DatabaseConfig, EmberConfig, JwtConfig}
+import com.github.ricemonger.secretnote.config.{ConstraintConfig, DatabaseConfig, EmberConfig, JwtConfig}
 import com.github.ricemonger.secretnote.http.middleware.JwtAuthMiddleware
 import com.github.ricemonger.secretnote.http.routes.{AuthRoutes, GlobalRoutesErrorHandler, NotesRoutes}
 import com.github.ricemonger.secretnote.repository.UserRepository.LiveUserRepository
@@ -31,6 +31,7 @@ object Application extends IOApp.Simple {
     emberConfig <- ConfigSource.default.at("ember").loadF[IO, EmberConfig]
     jwtConfig <- ConfigSource.default.at("jwt").loadF[IO, JwtConfig]
     dbConfig <- ConfigSource.default.at("database").loadF[IO, DatabaseConfig]
+    constraintConfig <- ConfigSource.default.at("constraint").loadF[IO, ConstraintConfig]
 
     _ <- runFlywayMigrations(dbConfig)
 
@@ -47,7 +48,7 @@ object Application extends IOApp.Simple {
       authService = new LiveAuthService[IO](userRepo, jwtConfig)
       noteService = new LiveNoteService[IO](userRepo)
 
-      authRoutes = AuthRoutes[IO](authService)
+      authRoutes = AuthRoutes[IO](authService, constraintConfig)
       notesRoutes = NotesRoutes[IO](noteService)
       authMiddleware = JwtAuthMiddleware[IO](jwtConfig)
       securedNotesRoutes = authMiddleware(notesRoutes.authedRoutes)
