@@ -1,5 +1,5 @@
 import apiClient from "../../app/axiosClient";
-import {notesUrl} from "../util/apiEndpoints";
+import {notesUrl} from "../config/apiEndpoints";
 import {NotePayload} from "../../types/api/NotePayload";
 
 const put = async (note: string): Promise<string> => {

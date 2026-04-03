@@ -2,37 +2,33 @@ package com.github.ricemonger.secretnote.http.routes
 
 import cats.effect.Concurrent
 import cats.syntax.all.*
-import com.github.ricemonger.secretnote.config.ConstraintConfig
-import com.github.ricemonger.secretnote.exception.{InvalidUserCredentialsException, UserAlreadyExistsException}
 import com.github.ricemonger.secretnote.service.AuthService.AuthService
-import io.circe.{Decoder, DecodingFailure, HCursor}
 import io.circe.generic.auto.*
+import io.github.iltotore.iron.*
+import io.github.iltotore.iron.constraint.all.*
+import io.github.iltotore.iron.circe.given
 import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.typelevel.log4cats.Logger
 
-case class AuthPayload(username: String, password: String)
+type UsernameConstraint = DescribedAs[
+  Match["^[a-zA-Z0-9._-]{4,20}$"],
+  "Username must be between 4 and 20 characters long and can only contain English letters, numbers and ._-"
+]
+type Username = String :| UsernameConstraint
+
+type PasswordConstraint = DescribedAs[
+  Match["^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]{4,20}$"],
+  "Password must be between 4 and 20 characters long and can contain English letters, numbers and ! @ # $ % ^ & * ( ) _ + - = [ ] { } ; ' : \" \\ | , . < > / ?"
+]
+type Password = String :| PasswordConstraint
+
+case class AuthPayload(username: Username, password: Password)
 case class JwtResponse(jwt: String)
 
-class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F], constraintConfig: ConstraintConfig) extends Http4sDsl[F] {
-
-  given Decoder[AuthPayload] = (c: HCursor) => for {
-    username <- c.downField("username").as[String]
-    _ <- Either.cond(
-      username.matches(constraintConfig.usernameRegex),
-      (),
-      DecodingFailure(constraintConfig.usernameMessage, c.downField("username").history)
-    )
-
-    password <- c.downField("password").as[String]
-    _ <- Either.cond(
-      password.matches(constraintConfig.passwordRegex),
-      (),
-      DecodingFailure(constraintConfig.passwordMessage, c.downField("password").history)
-    )
-  } yield AuthPayload(username, password)
+class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F]) extends Http4sDsl[F] {
 
   private val registerEndpoint: HttpRoutes[F] = HttpRoutes.of[F] {
     case req@POST -> Root => for {
@@ -57,6 +53,6 @@ class AuthRoutes[F[_] : Concurrent] private(authService: AuthService[F], constra
 }
 
 object AuthRoutes {
-  def apply[F[_] : {Concurrent, Logger}](authService: AuthService[F], constraintConfig: ConstraintConfig) =
-    new AuthRoutes[F](authService, constraintConfig)
+  def apply[F[_] : {Concurrent, Logger}](authService: AuthService[F]) =
+    new AuthRoutes[F](authService)
 }

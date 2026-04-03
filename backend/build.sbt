@@ -43,6 +43,9 @@ lazy val root = (project in file("."))
       "org.flywaydb" % "flyway-core" % flywayVersion,
       "org.flywaydb" % "flyway-database-postgresql" % flywayVersion,
 
+      "io.github.iltotore" %% "iron"       % ironVersion,
+      "io.github.iltotore" %% "iron-circe" % ironVersion,
+
       "com.github.pureconfig" %% "pureconfig-generic-scala3" % pureConfigVersion,
 
       "ch.qos.logback" % "logback-classic" % logbackVersion,

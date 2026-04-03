@@ -1,9 +1,9 @@
 import MockAdapter from 'axios-mock-adapter';
 import apiClient from '../../app/axiosClient';
 import { noteService } from './noteService';
-import { notesUrl } from '../util/apiEndpoints';
+import { notesUrl } from '../config/apiEndpoints';
 
-jest.mock("../util/apiEndpoints");
+jest.mock("../config/apiEndpoints");
 
 describe('noteService', () => {
     let axiosMockAdapter: MockAdapter;

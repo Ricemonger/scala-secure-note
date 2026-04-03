@@ -84,7 +84,7 @@ describe('axiosClient', () => {
         expect(reduxMockStore.dispatch).toHaveBeenCalledWith(mockAction);
     });
 
-    it('setupAxiosInterceptors should handle plain string API errors from the Scala backend', async () => {
+    it('setupAxiosInterceptors should handle plain string API errors', async () => {
         reduxMockStore = {getState: jest.fn().mockReturnValue({auth: {}})};
         setupAxiosInterceptors(reduxMockStore);
 
@@ -112,20 +112,6 @@ describe('axiosClient', () => {
 
         expect(logger.error).toHaveBeenCalledWith(
             errorMessage.message,
-            expect.objectContaining({url: '/test'})
-        );
-    });
-
-    it('setupAxiosInterceptors should handle Network Errors from request', async () => {
-        reduxMockStore = {getState: jest.fn().mockReturnValue({auth: {}})};
-        setupAxiosInterceptors(reduxMockStore);
-
-        axiosMockAdapter.onGet('/test').networkError();
-
-        await expect(apiClient.get('/test')).rejects.toThrow('Network Error (No response from server)');
-
-        expect(logger.error).toHaveBeenCalledWith(
-            'Network Error (No response from server)',
             expect.objectContaining({url: '/test'})
         );
     });

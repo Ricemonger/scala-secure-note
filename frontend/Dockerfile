@@ -30,7 +30,7 @@ RUN touch /var/run/nginx.pid && \
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
   CMD curl -f http://localhost:${SERVER_PORT}/ || \
-exit 1
+  exit 1
 
 USER nginx
 

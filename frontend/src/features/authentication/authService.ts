@@ -1,5 +1,5 @@
 import apiClient from "../../app/axiosClient";
-import {loginUrl, registerUrl} from "../util/apiEndpoints";
+import {loginUrl, registerUrl} from "../config/apiEndpoints";
 import {AuthPayload} from "../../types/api/AuthPayload";
 import {JwtResponse} from "../../types/api/JwtResponse";
 

@@ -1,9 +1,9 @@
 import MockAdapter from 'axios-mock-adapter';
 import apiClient from '../../app/axiosClient';
 import { authService } from './authService';
-import { registerUrl, loginUrl } from '../util/apiEndpoints';
+import { registerUrl, loginUrl } from '../config/apiEndpoints';
 
-jest.mock("../util/apiEndpoints");
+jest.mock("../config/apiEndpoints");
 
 describe('authService', () => {
     let axiosMockAdapter: MockAdapter;
