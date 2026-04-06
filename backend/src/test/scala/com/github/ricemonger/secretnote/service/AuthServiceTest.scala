@@ -4,8 +4,8 @@ import cats.effect.IO
 import com.github.ricemonger.secretnote.config.JwtConfig
 import com.github.ricemonger.secretnote.domain.user.{User, UserCredentials}
 import com.github.ricemonger.secretnote.exception.{InvalidUserCredentialsException, UserAlreadyExistsException}
-import com.github.ricemonger.secretnote.repository.UserRepository.UserRepository
-import com.github.ricemonger.secretnote.service.AuthService.LiveAuthService
+import com.github.ricemonger.secretnote.repository.UserRepository
+import com.github.ricemonger.secretnote.service.LiveAuthService
 import munit.CatsEffectSuite
 import tsec.passwordhashers.jca.BCrypt
 import tsec.common.Verified

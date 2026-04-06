@@ -1,7 +1,7 @@
 package com.github.ricemonger.secretnote.http.routes
 
 import cats.effect.IO
-import com.github.ricemonger.secretnote.service.AuthService.AuthService
+import com.github.ricemonger.secretnote.service.AuthService
 import io.circe.Json
 import io.circe.generic.auto.*
 import munit.CatsEffectSuite

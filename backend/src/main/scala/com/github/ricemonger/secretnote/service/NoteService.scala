@@ -4,11 +4,9 @@ import cats.MonadThrow
 import cats.syntax.all.*
 import com.github.ricemonger.secretnote.domain.user.User
 import com.github.ricemonger.secretnote.exception.UserNotFoundException
-import com.github.ricemonger.secretnote.repository.UserRepository.UserRepository
+import com.github.ricemonger.secretnote.repository.UserRepository
 
 import java.util.UUID
-
-object NoteService {
 
   trait NoteService[F[_]] {
     def updateSecretNote(id: UUID, note: String): F[User]
@@ -29,4 +27,3 @@ object NoteService {
         case None => UserNotFoundException(id.toString).raiseError[F, String]
     }
   }
-}

@@ -5,7 +5,7 @@ import cats.syntax.all.*
 import com.github.ricemonger.secretnote.config.JwtConfig
 import com.github.ricemonger.secretnote.domain.user.UserCredentials
 import com.github.ricemonger.secretnote.exception.{InvalidUserCredentialsException, UserAlreadyExistsException}
-import com.github.ricemonger.secretnote.repository.UserRepository.UserRepository
+import com.github.ricemonger.secretnote.repository.UserRepository
 import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
 import tsec.common.Verified
 import tsec.passwordhashers.PasswordHash
@@ -13,8 +13,6 @@ import tsec.passwordhashers.jca.BCrypt
 
 import java.time.Instant
 import java.util.UUID
-
-object AuthService {
 
   trait AuthService[F[_]] {
     def register(username: String, passwordAttempt: String): F[String]
@@ -61,4 +59,3 @@ object AuthService {
       JwtCirce.encode(claim, config.secret, JwtAlgorithm.HS256)
     }
   }
-}

@@ -2,8 +2,8 @@ package com.github.ricemonger.secretnote.http.routes
 
 import cats.effect.Concurrent
 import cats.syntax.all.*
-import com.github.ricemonger.secretnote.domain.user.{User, UserJwtPayload}
-import com.github.ricemonger.secretnote.service.NoteService.NoteService
+import com.github.ricemonger.secretnote.domain.user.UserJwtPayload
+import com.github.ricemonger.secretnote.service.NoteService
 import io.circe.generic.auto.*
 import org.http4s.*
 import org.http4s.circe.CirceEntityCodec.*

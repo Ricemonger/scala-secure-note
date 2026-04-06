@@ -5,9 +5,8 @@ import com.github.ricemonger.secretnote.config.syntax.loadF
 import com.github.ricemonger.secretnote.config.{DatabaseConfig, EmberConfig, JwtConfig}
 import com.github.ricemonger.secretnote.http.middleware.JwtAuthMiddleware
 import com.github.ricemonger.secretnote.http.routes.{AuthRoutes, GlobalRoutesErrorHandler, NotesRoutes}
-import com.github.ricemonger.secretnote.repository.UserRepository.LiveUserRepository
-import com.github.ricemonger.secretnote.service.AuthService.LiveAuthService
-import com.github.ricemonger.secretnote.service.NoteService.LiveNoteService
+import com.github.ricemonger.secretnote.repository.LiveUserRepository
+import com.github.ricemonger.secretnote.service.{LiveAuthService, LiveNoteService}
 import doobie.hikari.HikariTransactor
 import org.flywaydb.core.Flyway
 import org.http4s.Method

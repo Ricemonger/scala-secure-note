@@ -2,7 +2,7 @@ package com.github.ricemonger.secretnote.http.routes
 
 import cats.effect.Concurrent
 import cats.syntax.all.*
-import com.github.ricemonger.secretnote.service.AuthService.AuthService
+import com.github.ricemonger.secretnote.service.AuthService
 import io.circe.generic.auto.*
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.all.*

@@ -3,8 +3,8 @@ package com.github.ricemonger.secretnote.service
 import cats.effect.IO
 import com.github.ricemonger.secretnote.domain.user.{User, UserCredentials}
 import com.github.ricemonger.secretnote.exception.UserNotFoundException
-import com.github.ricemonger.secretnote.repository.UserRepository.UserRepository
-import com.github.ricemonger.secretnote.service.NoteService.LiveNoteService
+import com.github.ricemonger.secretnote.repository.UserRepository
+import com.github.ricemonger.secretnote.service.LiveNoteService
 import munit.CatsEffectSuite
 
 import java.util.UUID

@@ -2,7 +2,7 @@ package com.github.ricemonger.secretnote.repository
 
 import cats.effect.{IO, Resource}
 import com.github.ricemonger.secretnote.domain.user.{User, UserCredentials}
-import com.github.ricemonger.secretnote.repository.UserRepository.LiveUserRepository
+import com.github.ricemonger.secretnote.repository.LiveUserRepository
 import com.dimafeng.testcontainers.PostgreSQLContainer
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts

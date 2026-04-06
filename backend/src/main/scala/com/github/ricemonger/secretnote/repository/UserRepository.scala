@@ -8,8 +8,6 @@ import doobie.postgres.implicits.*
 
 import java.util.UUID
 
-object UserRepository {
-
   trait UserRepository[F[_]] {
     def insertCredentials(userCredentials: UserCredentials): F[Option[User]]
 
@@ -62,4 +60,3 @@ object UserRepository {
         .option
         .transact(xa)
   }
-}

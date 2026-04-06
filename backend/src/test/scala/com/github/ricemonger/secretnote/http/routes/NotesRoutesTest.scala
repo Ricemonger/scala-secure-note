@@ -2,7 +2,7 @@ package com.github.ricemonger.secretnote.http.routes
 
 import cats.effect.IO
 import com.github.ricemonger.secretnote.domain.user.{User, UserJwtPayload}
-import com.github.ricemonger.secretnote.service.NoteService.NoteService
+import com.github.ricemonger.secretnote.service.NoteService
 import io.circe.generic.auto.*
 import munit.CatsEffectSuite
 import org.http4s.*
